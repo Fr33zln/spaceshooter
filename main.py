@@ -48,6 +48,41 @@ while game:
     for bot in bot_list:
         bot.move(window)
 
+    for bullet in bullet_list_hero:
+        bullet.move(window)    
+    for bullet in bullet_list_bot:
+        bullet.move(window)
+    
+    for buff in Buff.buff_list:
+        buff.move(window)
+        buff.collide(hero,bot_list)
+        if buff.active:
+            buff.work_time
+
+
+
+        #COLLIDE
+    hero.collide_enemy(bot_list)
+    hero.collide_enemy(bullet_list_bot)
+    index_buff = hero.collide_buff(Buff.buff_list)
+    if index_buff != -1:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     #CREATE BOT
     end_time_bot = pygame.time.get_ticks()
     if end_time_bot - start_time_bot > 2000:
@@ -60,7 +95,6 @@ while game:
             bot1_image_list,
             2     
         ))
-
 
 
 
