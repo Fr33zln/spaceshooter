@@ -5,7 +5,7 @@ from random import randint, choice
 
 pygame.init()
 
-size_window = (50,600)
+size_window = (600,600)
 size_background = (600,3000)
 size_hero = (70,50)
 size_bot = (42,48)
@@ -30,9 +30,9 @@ bullet_list_bot = list()
 
 abs_path = os.path.abspath(__file__ +"/..")
 
-hero_image_list = pygame.transform.scale(pygame.image.load(os.path.join(abs_path, "Images", "hero.png")), size_hero)
+hero_image_list = [pygame.transform.scale(pygame.image.load(os.path.join(abs_path, "Images", "hero.png")), size_hero)]
 
-bot_image_list = pygame.transform.scale(pygame.image.load(os.path.join(abs_path, "Images", "bot.png")), size_bot)
+bot_image_list =[pygame.transform.flip(pygame.transform.scale(pygame.image.load(os.path.join(abs_path, "Images", "bot.png")), size_bot),False,True)]
 
 
 heart_image = pygame.transform.scale(pygame.image.load(os.path.join(abs_path, "Images", "heart.png")), [30,30])
