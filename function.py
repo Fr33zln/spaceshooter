@@ -8,8 +8,7 @@ class Plane(pygame.Rect):
     def __init__(self, x, y, width, height, image_list, step):
         super().__init__(x, y, width, height)
         self.image_list = image_list
-        self.image = self.image_list
-        self.image_now = self.image
+        self.image = self.image_list[0]
         self.image_count = 0
         self.step = step
 
@@ -18,20 +17,24 @@ class Plane(pygame.Rect):
     def move_image(self):
         if self.image_count == len(self.image_list * 10) - 1:
             self.image_count = 0
-        if self.image_count %10 == 0:
+        if self.image_count % 10 == 0:
             self.image = self.image_list[self.image_count // 10]
         self.image_count += 1
 
 class Hero(Plane):
     def __init__(self,x,y,width,height,image_list,step,hp):
         super().__init__(x,y,width,height,image_list,step)
-        self.walk = {"up": False, "down": False, "left":False,"right":False}
-        self.can_shoot = True
-        self.time_shoot = True
-        self.side = False
+        self.walk = {"left":False,"right":False}
         self.hp = hp
-        self.start_x = self.x
-        self.start_y = self.y
+        self.start_x = x
+        self.start_y = y
+        self.time_shoot = 0
+        self.can_shoot = True
+        self.kill_bot = 0
+        self.speed_bullet = -5
+        self.shoot_limit = FPS // 2
+        self.immortal = False
+
         
 
     def move(self, window):
@@ -49,7 +52,7 @@ class Hero(Plane):
 
     def shoot(self):
         self.time_shoot += 1
-        if self.time_shoot > FPS // 2:
+        if self.time_shoot > self.shoot_limit:
             self.can_shoot = True
             self.time_shoot= 0
 
@@ -61,6 +64,75 @@ class Hero(Plane):
             self.hp -= 1
             objects.pop(index)
 
+    def collide(self, buff_list):
+        return self.collidelist(buff_list)
+
+class Buff(pygame.Rect):
+
+    buff_list = list()
+
+    def __init__(self,x,y,width,height,image,designed,step,working_time):
+        super().__init__(x,y,width,height)
+        self.image = image
+        self.designed = designed
+        self.step = step
+        self.time_start = 0
+        self.working_time = working_time
+        self.active = False
+
+    def move(self,window):
+        if not self.active:
+            self.y += self.step
+
+
+
+    def completing(self,hero,bot_list):
+        if self.designed == "HP":
+            hero.hp += 1
+        elif self.desgined == "speed_bullet":
+            hero.speed_bullet *= 2
+            self.time_start = pygame.time.get_ticks()
+        elif self.desgined == "speed_shoot":
+            hero.speed_bullet /= 2
+            self.time_start = pygame.time.get_ticks()
+        elif self.designed == "immortal":
+            hero.immortal = True
+            self.time_start = pygame.time.get_ticks()
+        elif self.desgined == "freezing":
+            for bot in bot_list:
+                bot.freezing = True
+                bot.step = 0
+                self.y = size_window[1] +100
+                self.step = 0
+
+    def work_time(self,end_time,hero):
+        if end_time - self.time._start > self.working_time:
+            if self.designed == "speed_bullet":
+                hero.speed_bullet /=2
+            elif self.designed == "speed_bullet":
+                hero.shoot_limit *=2
+            elif self.designed == "speed_bullet":
+                hero.immortal = False
+            print(self)
+            Buff.buff_list.remove(self)
+
+
+
+
+    def collide(self,hero, bot_list):
+        if self.colliderect(hero) and not self.active:
+            self.active = True
+            self.completing(hero, bot_list)
+
+
+
+
+
+    def create_buff(x,y):
+        index = randint(0,len(BUFFS) -1)
+        Buff.buff_list.append(
+            Buff(x,y,size_buff[0], size_buff[1], buff_images[index],BUFFS[index], 2, 7000)
+            )
 
 
 
@@ -89,13 +161,13 @@ class Bot(Plane):
         if time_bot - self.start_time > self.random_time:
             self.start_time = time_bot
             self.random_time = randint(1800,2200)
-            bullet_image_bot.append(Bullet(self.centerx -5, self.bottom -20, 10, 20,WHITE,4, None))
+            bullet_list_bot.append(Bullet(self.centerx -5, self.bottom -20, 10, 20,WHITE,4, None))
 
 
     def collide(self, objects):
         index = self.collidelist(objects)
         if index != -1:
-            create_buff(self.x,self.y, self.step)
+            create_buff(self.x,self.y)
             bot_list.remove(self)
             objects.pop(index)
             return True
@@ -116,17 +188,17 @@ class Bullet(pygame.Rect):
         pygame.draw.rect(window,self.color,self)
 
 
-    def collide_hero(self,hero):
-        if self.colliderect(hero):
-            hero.hp =- 1
-            bullet_image_list.remove(self)
+    #def collide_hero(self,hero):
+        #if self.colliderect(hero):
+            #hero.hp =- 1
+            #bullet_image_list.remove(self)
 
 
 class Buff(pygame.Rect):
 
     buff_list = list()
 
-    def __init__(self,x,y,width,image,designed,step,working_time):
+    def __init__(self,x,y,width,height,image,designed,step,working_time):
                 super().__init__(x,y,width,height)
                 self.image = image
                 self.designed = designed
@@ -144,7 +216,6 @@ class Buff(pygame.Rect):
             def completing(self,hero,bot_list):
                 if self.designed == "HP":
                     hero.hp += 1
-
                 elif self.desgined == "speed_bullet":
                     hero.speed_bullet *= 2
                     self.time_start = pygame.time.get_ticks()
@@ -153,45 +224,42 @@ class Buff(pygame.Rect):
                     self.time_start = pygame.time.get_ticks()
                 elif self.designed == "immortal":
                     hero.immortal = True
+                    self.time_start = pygame.time.get_ticks()
                 elif self.desgined == "freezing":
                     for bot in bot_list:
                         bot.freezing = True
                         bot.step = 0
-
-
                 self.y = size_window[1] +100
                 self.step = 0
 
     def work_time(self,end_time,hero):
-        if end_time - self.time._start > self.work_time:
+        if end_time - self.time._start > self.working_time:
             if self.designed == "speed_bullet":
                 hero.speed_bullet /=2
             elif self.designed == "speed_bullet":
-                hero_shoot_limit *=2
+                hero.shoot_limit *=2
             elif self.designed == "speed_bullet":
                 hero.immortal = False
+            print(self)
             Buff.buff_list.remove(self)
 
 
-    def move(self,window):
-        if not self.active:
-            self.y += self.step
-
-            window.blit(self.image, (self.x, self.y))
 
 
-    def collide(self,hero):
-        if self.collide.hero() and not self.active:
+    def collide(self,hero, bot_list):
+        if self.colliderect(hero) and not self.active:
             self.active = True
+            self.completing(hero, bot_list)
 
 
 
 
 
-    def create_buff(x,y,step):
+    def create_buff(x,y):
         index = randint(0,len(BUFFS) -1)
-        Buff.buff_list.append(Buff(x,y,size_buff[0], size_buff[1], buff_images[index],BUFFS[index], step, 7000)
-        )
+        Buff.buff_list.append(
+            Buff(x,y,size_buff[0], size_buff[1], buff_images[index],BUFFS[index], 2, 7000)
+            )
 
 
 class Background():
@@ -216,5 +284,3 @@ class Background():
 
         window.blit(self.image1, (0, self.y1))
         window.blit(self.image2, (0, self.y2))
-
-
