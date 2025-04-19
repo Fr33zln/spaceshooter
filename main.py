@@ -45,7 +45,7 @@ while game:
     background.move(window)
 
 
-    rednder_text_hp = font.render(f"x{hero.hp}", True, RED)
+    render_text_hp = font.render(f"x{hero.hp}", True, RED)
     render_kill_bot = font.render(f"{hero.kill_bot}",True,RED)
     window.blit(heart_image, (10,10))
     window.blit(render_text_hp, (45,12)) #?
@@ -74,7 +74,7 @@ while game:
             size_bot[0],
             size_bot[1],
             bot_image_list,
-            2     
+            2 
         ))
 
     #BULLET
@@ -104,17 +104,17 @@ while game:
         if event.type == pygame.QUIT:
             game = False
         if event.type == pygame.KEYDOWN:
-            if event.kry == pygame.K_a:
+            if event.key == pygame.K_a:
                 hero.walk["left"] = True
-            if event.kry == pygame.K_d:
+            if event.key == pygame.K_d:
                 hero.walk["right"] = True
             if event.key == pygame.K_SPACE:
                 bullet_list_hero.append(Bullet(hero.centerx - 5,hero.y, 10, 20, RED, -5, image=None))
                 hero.can_shoot = False
         if event.type == pygame.KEYUP:
-            if event.type == pygame.K_a:
+            if event.key == pygame.K_a:
                 hero.walk["left"] = False
-            if event.type == pygame.K_d:
+            if event.key == pygame.K_d:
                 hero.walk["right"] = False
 
     clock.tick(FPS)
